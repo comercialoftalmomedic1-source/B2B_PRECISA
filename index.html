@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OftalmoMedic · Dashboard PRECISA - B2B</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Roboto:wght@400;500;700;900&display=swap');
+:root {
+  --primary:#00A170; --primary-dark:#1C6E57; --primary-deep:#134534;
+  --accent:#99E066; --accent-soft:#EAF7EF; --bg:#EEF3F1; --white:#fff;
+  --ink:#243B36; --muted:#6B7E78; --line:#E4EBE8; --soft:#F5FAF7;
+  --danger:#C0504D; --warning:#D5A021; --blue:#4F7AA3; --purple:#7C6BB1;
+  --title-font:'Atkinson Hyperlegible',Arial,sans-serif;
+  --body-font:'Roboto',Arial,sans-serif;
+  --shadow:0 12px 36px rgba(19,69,52,.10); --shadow-soft:0 5px 18px rgba(19,69,52,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  min-height:100vh; color:var(--ink); font-family:var(--body-font); padding:24px;
+  background:radial-gradient(circle at top left,rgba(153,224,102,.12),transparent 32%),
+             linear-gradient(180deg,#F4F8F6 0%,var(--bg) 100%);
+}
+button,select{font:inherit}
+.container{width:min(1480px,100%);margin:0 auto;background:#fff;border:1px solid rgba(228,235,232,.95);border-radius:20px;box-shadow:var(--shadow);overflow:hidden}
+.header{min-height:118px;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:19px 30px;color:#fff;background:linear-gradient(120deg,var(--primary) 0%,var(--primary-dark) 72%,var(--primary-deep) 100%)}
+.brand{display:flex;align-items:center;gap:18px;min-width:0}
+.logo-box{width:132px;height:76px;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;padding:8px 12px;box-shadow:0 8px 22px rgba(0,0,0,.14);flex:0 0 auto}
+.logo-box img{max-width:100%;max-height:100%;object-fit:contain}
+.logo-fallback{display:none;color:var(--primary);font-family:var(--title-font);font-weight:700;font-size:22px}
+.brand-copy h1{font-family:var(--title-font);font-size:clamp(23px,2.4vw,33px);line-height:1.02;letter-spacing:-.4px}
+.brand-copy p{margin-top:7px;color:#D8F3E6;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase}
+.header-meta{text-align:right;color:#D8F3E6;font-family:var(--title-font);font-size:11px;font-weight:700;line-height:1.55;letter-spacing:1.4px;text-transform:uppercase;white-space:nowrap}
+.accent-line{height:5px;background:linear-gradient(90deg,var(--accent),#C6F0A3,var(--accent))}
+main{padding:24px 28px 30px}
+.filters-panel{margin-bottom:17px;padding:14px 16px 16px;background:var(--soft);border:1px solid var(--line);border-radius:14px}
+.filters-heading{display:flex;align-items:baseline;justify-content:space-between;gap:15px;margin-bottom:11px}
+.filters-heading strong{color:var(--primary-dark);font-family:var(--title-font);font-size:15px}
+.filters-heading small{color:var(--muted);font-size:11px;font-weight:500}
+.filters{display:grid;grid-template-columns:repeat(4,minmax(145px,1fr));gap:10px;align-items:end}
+.filter-box{display:flex;flex-direction:column;gap:5px}
+.filter-box label{color:var(--muted);font-size:10px;font-weight:900;letter-spacing:.55px;text-transform:uppercase}
+select,.btn{min-height:40px;padding:9px 11px;border:1px solid #D5E1DC;border-radius:9px;background:#fff;color:var(--primary-dark);font-size:12px;font-weight:800;outline:none;cursor:pointer}
+select:hover,.btn:hover{border-color:var(--primary)}
+select:focus,.btn:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,161,112,.13)}
+.multi-select{position:relative}
+.multi-toggle{width:100%;min-height:40px;padding:9px 11px;border:1px solid #D5E1DC;border-radius:9px;background:#fff;color:var(--primary-dark);font-size:12px;font-weight:800;outline:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left}
+.multi-toggle:hover,.multi-toggle:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,161,112,.10)}
+.multi-menu{position:absolute;left:0;right:0;top:calc(100% + 5px);z-index:30;display:none;max-height:240px;overflow:auto;padding:7px;background:#fff;border:1px solid #CFE0D9;border-radius:10px;box-shadow:0 14px 30px rgba(19,69,52,.16)}
+.multi-select.open .multi-menu{display:block}
+.multi-option{display:flex;align-items:center;gap:8px;padding:8px 7px;border-radius:7px;color:var(--ink);font-size:11px;font-weight:700;cursor:pointer}
+.multi-option:hover{background:var(--accent-soft)}
+.multi-option input{accent-color:var(--primary);width:15px;height:15px;cursor:pointer}
+.multi-divider{height:1px;background:var(--line);margin:4px 0}
+.hidden-filter{display:none!important}
+.btn{display:flex;align-items:center;justify-content:center;gap:7px}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.ghost{background:#fff}
+.metrics-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:16px 0 23px}
+.kpi-card{position:relative;min-height:118px;padding:19px 15px 14px;overflow:hidden;background:var(--soft);border:1px solid var(--line);border-radius:13px;box-shadow:0 3px 10px rgba(19,69,52,.035)}
+.kpi-card:before{content:'';position:absolute;top:0;left:0;width:100%;height:5px;background:var(--primary)}
+.kpi-card:nth-child(2):before{background:var(--primary-dark)} .kpi-card:nth-child(3):before{background:var(--accent)} .kpi-card:nth-child(4):before{background:var(--blue)} .kpi-card:nth-child(5):before{background:var(--warning)} .kpi-card:nth-child(6):before{background:var(--purple)}
+.kpi-card span{display:block;min-height:27px;color:var(--muted);font-size:10.3px;font-weight:800;letter-spacing:.45px;line-height:1.35;text-transform:uppercase}
+.kpi-card div{margin-top:7px;color:var(--ink);font-family:var(--title-font);font-size:clamp(22px,1.8vw,29px);font-weight:700;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi-card small{display:block;margin-top:8px;color:var(--muted);font-size:10.2px;font-weight:700;line-height:1.25}
+.section-title{position:relative;margin:28px 0 12px;padding:0 0 10px 14px;color:var(--ink);font-family:var(--title-font);font-size:20px;font-weight:700;border-bottom:1px solid var(--line)}
+.section-title:before{content:'';position:absolute;left:0;top:2px;width:5px;height:22px;border-radius:5px;background:var(--primary)}
+.section-sub{margin:-6px 0 14px 14px;color:var(--muted);font-size:11.5px;line-height:1.45}
+.insights{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 22px}
+.insight{padding:15px 15px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:var(--shadow-soft)}
+.insight strong{display:block;color:var(--primary-dark);font-family:var(--title-font);font-size:13px;margin-bottom:6px}
+.insight p{color:var(--muted);font-size:11.2px;line-height:1.5;font-weight:500}
+.charts-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.chart-card{min-width:0;padding:15px 16px 12px;background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow-soft)}
+.chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:7px}
+.chart-head h3{font-family:var(--title-font);font-size:15px;color:var(--ink)}
+.chart-head span{color:var(--muted);font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.45px}
+.chart-wrap{position:relative;height:310px}
+.chart-wrap.tall{height:360px}
+.chart-breakdown{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:13px}
+.breakdown-item{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--soft);min-width:0}
+.breakdown-dot{width:11px;height:11px;border-radius:3px;flex:0 0 auto;margin-top:3px}
+.breakdown-item strong{display:block;font-size:13px;color:var(--ink);line-height:1.3}
+.breakdown-item small{display:block;font-size:11px;color:var(--primary-dark);font-weight:900;margin-top:4px}
+.breakdown-item .amount{display:block;font-size:11px;color:var(--muted);margin-top:3px;word-break:break-word}
+.breakdown-summary{grid-column:1/-1;padding:10px;text-align:center;color:var(--primary-dark);font-size:11px;font-weight:800;background:var(--accent-soft);border-radius:9px}
+.center-breakdown{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:12px}
+.center-breakdown .breakdown-item{padding:8px}
+.center-breakdown .breakdown-item strong{font-size:11px}
+.center-breakdown .breakdown-item small{font-size:12px}
+@media(max-width:480px){.chart-breakdown,.center-breakdown{grid-template-columns:1fr}}
+.chart-note{margin-top:6px;color:var(--muted);font-size:10px;line-height:1.4}
+.b2b-top{display:grid;grid-template-columns:260px 1fr;gap:14px;align-items:stretch;margin-bottom:14px}
+.b2b-filter{padding:15px;background:var(--soft);border:1px solid var(--line);border-radius:13px}
+.b2b-filter label{display:block;margin-bottom:7px;color:var(--muted);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.5px}
+.b2b-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:11px}
+.b2b-kpi{padding:15px 13px;border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:var(--shadow-soft)}
+.b2b-kpi span{display:block;color:var(--muted);font-size:9.8px;font-weight:900;text-transform:uppercase;letter-spacing:.4px}
+.b2b-kpi strong{display:block;margin-top:7px;color:var(--primary-dark);font-family:var(--title-font);font-size:25px}
+.table-card{margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow-soft);overflow:hidden}
+.table-card h3{padding:14px 16px 10px;font-family:var(--title-font);font-size:15px}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:11px}
+thead th{padding:10px 12px;background:var(--soft);color:var(--primary-dark);font-size:9.7px;font-weight:900;text-transform:uppercase;letter-spacing:.35px;text-align:right;border-top:1px solid var(--line);border-bottom:1px solid var(--line);white-space:nowrap}
+thead th:first-child,tbody td:first-child{text-align:left}
+tbody td{padding:10px 12px;border-bottom:1px solid #EEF3F1;text-align:right;color:var(--ink);font-weight:600}
+tbody tr:hover{background:#FBFDFC}
+.badge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:var(--accent-soft);color:var(--primary-dark);font-weight:900;font-size:9.5px}
+.badge.warn{background:#FFF6DE;color:#8A6814} .badge.danger{background:#FBE9E7;color:#843C38}
+.module-buttons{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 15px}.module-btn{background:#fff;border:1px solid #cfe0d9;border-radius:10px;padding:11px 14px;font-weight:800;font-size:12px;color:#1c6e57;cursor:pointer}.module-btn:hover,.module-btn.active{background:#00a170;color:#fff;border-color:#00a170}.module-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.module-metric{padding:13px;background:#f5faf7;border:1px solid #e4ebe8;border-radius:11px}.module-metric small{display:block;color:#6b7e78;font-weight:800;font-size:10px}.module-metric strong{display:block;color:#134534;font-size:19px;margin-top:7px}@media(max-width:760px){.module-metrics{grid-template-columns:1fr 1fr}}.note-box{margin-top:18px;padding:13px 15px;border:1px solid #CFE9D9;border-radius:10px;background:var(--accent-soft);color:var(--primary-dark);font-size:11px;font-weight:700;line-height:1.55}
+.footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 28px;background:#F9FBFA;border-top:1px solid var(--line);color:var(--muted);font-size:10.5px}
+.footer strong{color:var(--primary-dark)}
+.no-data{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:12px;font-weight:700;background:rgba(255,255,255,.92);z-index:4;border-radius:8px;padding:20px}
+@media(max-width:1150px){.metrics-grid{grid-template-columns:repeat(3,1fr)}.insights{grid-template-columns:repeat(2,1fr)}.filters{grid-template-columns:repeat(3,1fr)}.b2b-top{grid-template-columns:1fr}}
+@media(max-width:760px){body{padding:10px}.container{border-radius:14px}.header{align-items:flex-start;flex-direction:column;padding:18px 16px}.header-meta{text-align:left;white-space:normal}.logo-box{width:108px;height:64px}main{padding:15px 12px 22px}.filters-heading{align-items:flex-start;flex-direction:column;gap:3px}.filters{grid-template-columns:1fr}.metrics-grid{grid-template-columns:1fr 1fr}.insights{grid-template-columns:1fr}.charts-grid{grid-template-columns:1fr}.b2b-kpis{grid-template-columns:1fr 1fr}.footer{align-items:flex-start;flex-direction:column;padding:12px 15px}}
+@media(max-width:480px){.metrics-grid{grid-template-columns:1fr}.b2b-kpis{grid-template-columns:1fr}}
+@media print{body{padding:0;background:#fff}.container{box-shadow:none;border:0;border-radius:0}.filters-panel,.print-hide{display:none!important}.chart-wrap{height:260px}.header{print-color-adjust:exact;-webkit-print-color-adjust:exact}main{padding:14px}}
+/* Menú de detalle PRECISA plegable */
+.precisa-trigger-wrap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:24px 0 12px}
+.precisa-trigger{display:flex;width:100%;align-items:center;justify-content:center;gap:12px;min-height:40px;padding:12px 18px;background:linear-gradient(110deg,#009F72,#1C7560);color:white;border:0;border-radius:9px;font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.2px;box-shadow:0 5px 12px rgba(19,69,52,.12);cursor:pointer}
+.precisa-trigger:hover,.precisa-trigger:focus-visible{filter:brightness(.94);outline:3px solid rgba(153,224,102,.4)}
+.precisa-trigger .chevron{display:inline-block;transition:transform .2s ease;font-size:17px}
+.precisa-trigger[aria-expanded="true"] .chevron{transform:rotate(180deg)}
+.precisa-panel[hidden]{display:none!important}
+.precisa-panel{padding:4px 0 18px}
+@media(max-width:760px){.precisa-trigger-wrap{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+<header class="header">
+  <div class="brand">
+    <div class="logo-box">
+      <img src="https://cdn.brandfetch.io/idfA0RErpQ/w/1000/h/729/theme/dark/logo.png?c=1bxid64Mup7aczewSAYMX&t=1787953806478" alt="OftalmoMedic" onerror="this.style.display='none';document.getElementById('logoFallback').style.display='flex'">
+      <div id="logoFallback" class="logo-fallback">OftalmoMedic</div>
+    </div>
+    <div class="brand-copy">
+      <h1>Dashboard PRECISA - B2B</h1>
+      <p>Empresas · Campañas · Facturación y conversión</p>
+    </div>
+  </div>
+  <div class="header-meta" id="headerMeta">Reporte Ejecutivo 2026<br>Cargando archivos...</div>
+</header>
+<div class="accent-line"></div>
+
+<main>
+<section class="filters-panel">
+  <div class="filters-heading">
+    <strong>Filtros de facturación</strong>
+  </div>
+  <div class="filters">
+    <div class="filter-box"><label>Fuente</label><select id="fSource"><option value="TODOS">TODAS</option><option value="B2B">B2B</option><option value="PRECISA">PRECISA</option></select></div>
+    <div class="filter-box hidden-filter" id="mainCampaignBox">
+      <label>Campañas B2B</label>
+      <div class="multi-select" id="mainCampaignMulti">
+        <button type="button" class="multi-toggle" id="mainCampaignToggle"><span id="mainCampaignLabel">Todas las campañas</span><span>▾</span></button>
+        <div class="multi-menu" id="mainCampaignMenu"></div>
+      </div>
+    </div>
+    <div class="filter-box"><label>Mes de análisis</label><select id="fMonth"><option value="TODOS">TODOS LOS MESES</option></select></div>
+    <div class="filter-box"><label>Centro de costo</label><select id="fCenter"><option value="TODOS">TODOS</option></select></div>
+    <div class="filter-box"><label>Sede</label><select id="fSede"><option value="TODOS">TODAS</option></select></div>
+  </div>
+</section>
+
+<div id="monthAdvisory" class="note-box" style="display:none;margin:0 0 14px"></div>
+<div id="dataStatus" style="font-size:11px;color:#6b7e78;margin:0 0 8px"></div>
+<div class="metrics-grid">
+  <div class="kpi-card"><span>Facturación total</span><div id="kRevenue">S/ 0.00</div></div>
+  <div class="kpi-card"><span>Clientes / pacientes únicos</span><div id="kClients">0</div></div>
+  <div class="kpi-card"><span>Ticket promedio</span><div id="kTicket">S/ 0.00</div></div>
+</div>
+
+<h2 class="section-title">Desempeño comercial consolidado</h2>
+<p class="section-sub">Cuando seleccionas TODAS las fuentes, se suma la facturación de todas las campañas B2B y se compara con PRECISA. DOREL e IBR no incluyen fecha ni sede en la base entregada; PRECISA sí permite seguimiento temporal y por sede.</p>
+<div class="charts-grid">
+  <div class="chart-card">
+    <div class="chart-head"><h3 id="sourceChartTitle">Comparativo B2B vs PRECISA</h3><span id="sourceChartSubtitle">Facturación consolidada por fuente</span></div>
+    <div class="chart-wrap"><canvas id="chSource"></canvas><div class="no-data" id="ndSource">Sin datos para los filtros seleccionados.</div></div>
+    <div class="chart-breakdown" id="sourceBreakdown"></div>
+    <div class="chart-note" id="sourceChartNote">B2B agrupa todas las campañas; PRECISA se presenta como una fuente independiente. Los porcentajes corresponden a la facturación filtrada.</div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-head"><h3>Facturación por centro de costo</h3><span>Mix de línea de negocio</span></div>
+    <div class="chart-wrap"><canvas id="chCenter"></canvas><div class="no-data" id="ndCenter">Sin datos para los filtros seleccionados.</div></div>
+    <div class="center-breakdown" id="centerBreakdown"></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-head"><h3>Facturación por sede</h3><span>Distribución geográfica</span></div>
+    <div class="chart-wrap"><canvas id="chSede"></canvas><div class="no-data" id="ndSede">Sin datos para los filtros seleccionados.</div></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-head"><h3>Top servicios / productos</h3><span>Por facturación</span></div>
+    <div class="chart-wrap tall"><canvas id="chService"></canvas><div class="no-data" id="ndService">Sin datos para los filtros seleccionados.</div></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-head"><h3>Evolución diaria de facturación</h3><span>PRECISA · base con fecha</span></div>
+    <div class="chart-wrap"><canvas id="chDaily"></canvas><div class="no-data" id="ndDaily">La selección actual no contiene registros con fecha. DOREL e IBR no tienen fecha de venta en el Excel.</div></div>
+    <div class="chart-note">La tendencia temporal solo puede calcularse con PRECISA porque las campañas DOREL e IBR no contienen fecha de venta.</div>
+  </div>
+</div>
+
+<div class="precisa-trigger-wrap">
+ <button type="button" class="precisa-trigger" id="togglePrecisaDetalle" aria-controls="precisaPanel" aria-expanded="false">PRECISA DETALLE <span class="chevron" aria-hidden="true">⌄</span></button>
+ <button type="button" class="precisa-trigger" id="toggleConversionB2B" aria-controls="conversionB2BPanel" aria-expanded="false">CONVERSIÓN DE CAMPAÑAS B2B <span class="chevron" aria-hidden="true">⌄</span></button>
+</div>
+<section id="precisaPanel" class="precisa-panel" hidden>
+ <h2 class="section-title">PRECISA Detalle</h2>
+ <p class="section-sub">Cuatro vistas del Excel maestro. El selector de mes controla los reportes con fecha. Las categorías de médicos e instituciones se calculan con los umbrales de facturación del Excel original para el mes seleccionado.</p>
+ <div class="module-buttons" id="moduleButtons">
+  <button class="module-btn active" type="button" data-module="base">Base_Precisa</button>
+  <button class="module-btn" type="button" data-module="medicos">Categoría_Médicos</button>
+  <button class="module-btn" type="button" data-module="instituciones">Categoría_Institución</button>
+  <button class="module-btn" type="button" data-module="detalle">Detalle</button>
+ </div>
+ <div class="module-metrics" id="moduleMetrics"></div>
+ <div class="charts-grid" style="margin-top:12px"><div class="chart-card"><div class="chart-head"><h3 id="moduleTitle">Facturación PRECISA</h3><span id="moduleSubtitle">Vista histórica</span></div><div class="chart-wrap" style="height:330px"><canvas id="chModule"></canvas></div></div>
+ <div class="chart-card"><div class="chart-head"><h3 id="moduleRightTitle">Distribución</h3></div><div class="chart-wrap" style="height:330px"><canvas id="chModuleRight"></canvas></div></div></div>
+ <div class="table-card"><h3 id="moduleTableTitle">Detalle</h3><div class="table-scroll"><table><thead id="moduleTHead"></thead><tbody id="moduleTBody"></tbody></table></div></div>
+ <div class="chart-note" id="moduleCaveat" style="padding:12px 3px"></div>
+</section>
+<section id="conversionB2BPanel" class="precisa-panel" hidden>
+<h2 class="section-title">Conversión de campañas B2B</h2>
+<p class="section-sub">REGISTRO representa colaboradores atendidos y VENTA representa clientes que concretaron compra. En VENTA se cuentan pacientes únicos por DNI, evitando duplicar compras con varias líneas como montura + luna.</p>
+
+<div class="b2b-top">
+  <div class="b2b-filter">
+    <label>Campaña para analizar</label>
+    <select id="fCampaign"><option value="TODOS">TODAS LAS CAMPAÑAS</option></select>
+  </div>
+  <div class="b2b-kpis">
+    <div class="b2b-kpi"><span>Atendidos</span><strong id="bAtt">0</strong></div>
+    <div class="b2b-kpi"><span>Vendidos</span><strong id="bSold">0</strong></div>
+    <div class="b2b-kpi"><span>No convertidos</span><strong id="bLost">0</strong></div>
+    <div class="b2b-kpi"><span>Conversión</span><strong id="bConv">0%</strong></div>
+    <div class="b2b-kpi"><span>Ticket promedio</span><strong id="bTicket">S/ 0</strong></div>
+  </div>
+</div>
+
+<div class="charts-grid">
+  <div class="chart-card">
+    <div class="chart-head"><h3>Embudo de conversión</h3><span>Atendidos → venta</span></div>
+    <div class="chart-wrap"><canvas id="chFunnel"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-head"><h3>Comparativo por campaña</h3><span>Volumen y ventas</span></div>
+    <div class="chart-wrap"><canvas id="chCampaign"></canvas></div>
+  </div>
+</div>
+
+<div class="table-card">
+  <h3>Scorecard gerencial de campañas</h3>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Campaña</th><th>Atendidos</th><th>Vendidos</th><th>Conversión</th><th>Caída</th><th>Facturación</th><th>Ticket prom.</th><th>Estado</th></tr></thead>
+      <tbody id="campaignTable"></tbody>
+    </table>
+  </div>
+</div>
+
+</section>
+</main>
+
+<footer class="footer">
+  <span><strong>OftalmoMedic</strong> · Dashboard PRECISA - B2B</span>
+  <span id="footerSource">Fuentes: B2B CAMPAÑAS.xlsx + PRECISA_MAESTRO.xlsx + PRECISA.xlsx</span>
+</footer>
+</div>
+
+
+<script>
+let SALES = [];
+let ATTENDANCE = [];
+let charts = {};
+let isLoading = false;
+let selectedMainCampaigns = new Set();
+let campaignsInitialized = false;
+let preciseHistory = [];
+let activeModule = 'base';
+const MONTH_NAMES=['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SETIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+
+const DATA_FILES = {
+  b2b: 'B2B CAMPAÑAS.xlsx',
+  precisa: 'PRECISA.xlsx',
+  master:'PRECISA_MAESTRO.xlsx'
+};
+
+const COLORS = ['#00A170','#1C6E57','#99E066','#4F7AA3','#D5A021','#5CBF8A','#7C6BB1','#C0504D','#76A89A','#B6C75B'];
+const money = v => new Intl.NumberFormat('es-PE',{style:'currency',currency:'PEN',minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(v)||0);
+const pct = v => `${(Number(v)||0).toFixed(1)}%`;
+const sum = arr => arr.reduce((a,b)=>a+(Number(b)||0),0);
+const clean = v => (v === null || v === undefined ? '' : String(v).trim());
+
+function norm(s){
+  return clean(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toUpperCase();
+}
+function normalizedRow(row){
+  const out={};
+  Object.entries(row||{}).forEach(([k,v])=>{ out[norm(k)] = v; });
+  return out;
+}
+function val(row, ...keys){
+  for(const k of keys){
+    const nk=norm(k);
+    if(Object.prototype.hasOwnProperty.call(row,nk) && clean(row[nk])!=='') return row[nk];
+  }
+  return '';
+}
+function num(v){
+  if(typeof v === 'number') return Number.isFinite(v) ? v : 0;
+  let s=clean(v).replace(/S\/\.?/gi,'').replace(/\s/g,'');
+  if(!s) return 0;
+  // Handle 1,234.56 and 1.234,56 safely.
+  if(s.includes(',') && s.includes('.')){
+    if(s.lastIndexOf(',') > s.lastIndexOf('.')) s=s.replace(/\./g,'').replace(',','.');
+    else s=s.replace(/,/g,'');
+  }else if(s.includes(',') && !s.includes('.')){
+    const parts=s.split(',');
+    if(parts.length===2 && parts[1].length<=2) s=parts[0].replace(/\./g,'')+'.'+parts[1];
+    else s=s.replace(/,/g,'');
+  }
+  const n=Number(s.replace(/[^0-9.-]/g,''));
+  return Number.isFinite(n)?n:0;
+}
+function toISODate(v){
+  if(v instanceof Date && !isNaN(v)){
+    const y=v.getFullYear(), m=String(v.getMonth()+1).padStart(2,'0'), d=String(v.getDate()).padStart(2,'0');
+    return `${y}-${m}-${d}`;
+  }
+  const s=clean(v);
+  if(!s) return null;
+  let m=s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if(m) return `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
+  m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})/);
+  if(m) return `${m[3]}-${String(m[2]).padStart(2,'0')}-${String(m[1]).padStart(2,'0')}`;
+  if(/^\d+(\.\d+)?$/.test(s) && typeof XLSX!=='undefined' && XLSX.SSF){
+    const dc=XLSX.SSF.parse_date_code(Number(s));
+    if(dc) return `${dc.y}-${String(dc.m).padStart(2,'0')}-${String(dc.d).padStart(2,'0')}`;
+  }
+  const d=new Date(s);
+  if(!isNaN(d)){
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+  return null;
+}
+function unique(arr){return [...new Set(arr.filter(x=>clean(x)!==''))].sort((a,b)=>String(a).localeCompare(String(b),'es'))}
+function groupSum(data,key){
+  const m={};
+  data.forEach(r=>{const k=clean(r[key])||'SIN DATO';m[k]=(m[k]||0)+Number(r.amount||0)});
+  return Object.entries(m).sort((a,b)=>b[1]-a[1]);
+}
+function escapeHtml(s){
+  return clean(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+}
+function setStatus(text, isError=false){
+  const el=document.getElementById('dataStatus');
+  if(!el) return;
+  el.textContent=text;
+  el.style.color=isError?'#C0504D':'#6B7E78';
+  el.style.fontWeight=isError?'800':'500';
+}
+function refreshSelect(id, values, allLabel){
+  const el=document.getElementById(id);
+  const prev=el.value;
+  el.innerHTML='';
+  const all=document.createElement('option');
+  all.value='TODOS'; all.textContent=allLabel;
+  el.appendChild(all);
+  values.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;el.appendChild(o)});
+  el.value=[...el.options].some(o=>o.value===prev)?prev:'TODOS';
+}
+function sheetRows(wb, name){
+  const sheetName=wb.SheetNames.find(n=>norm(n)===norm(name));
+  if(!sheetName) throw new Error(`No existe la hoja "${name}" en ${name==='Hoja1'?DATA_FILES.precisa:DATA_FILES.b2b}.`);
+  return XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {defval:'', raw:false, dateNF:'yyyy-mm-dd'});
+}
+async function fetchWorkbook(file){
+  const url='./'+encodeURIComponent(file)+'?v='+Date.now();
+  const r=await fetch(url,{cache:'no-store'});
+  if(!r.ok) throw new Error(`No se pudo abrir ${file} (${r.status}).`);
+  const buffer=await r.arrayBuffer();
+  return XLSX.read(buffer,{type:'array',cellDates:false});
+}
+
+function parseB2B(wb){
+  const regRows=sheetRows(wb,'REGISTRO').map(normalizedRow);
+  const saleRows=sheetRows(wb,'VENTA').map(normalizedRow);
+
+  const attMap=new Map();
+  regRows.forEach(r=>{
+    const campaign=clean(val(r,'CAMPAÑA','CAMPANA')).toUpperCase();
+    const dni=clean(val(r,'DNI'));
+    const name=clean(val(r,'NOMBRE COMPLETO','NOMBRE','PACIENTE'));
+    if(!campaign || (!dni && !name)) return;
+    const baseKey=dni||norm(name);
+    const clientKey=`${campaign}|${baseKey}`;
+    attMap.set(clientKey,{
+      campaign,
+      date:toISODate(val(r,'FECHA','FECHA ATENCION','FECHA DE ATENCION')),
+      clientKey,
+      age:num(val(r,'EDAD'))||null,
+      district:clean(val(r,'DISTRITO'))||'Sin distrito',
+      gender:clean(val(r,'GENERO','GÉNERO'))||'Sin dato'
+    });
+  });
+
+  const sales=[];
+  saleRows.forEach(r=>{
+    const source=clean(val(r,'CAMPAÑA','CAMPANA')).toUpperCase();
+    const dni=clean(val(r,'DNI'));
+    const name=clean(val(r,'NOMBRE COMPLETO','NOMBRE','PACIENTE'));
+    if(!source || (!dni && !name)) return;
+    const product=clean(val(r,'PRODUCTO'));
+    const treatment=clean(val(r,'TRATAMIENTO'));
+    const lensType=clean(val(r,'TIPO DE LUNA'));
+    let service=product||treatment||lensType||'Producto B2B';
+    if(norm(product).includes('LUNA')){
+      const detail=treatment||lensType;
+      if(detail) service=`${product} · ${detail}`;
+    }
+    const baseKey=dni||norm(name);
+    sales.push({
+      source,
+      center:clean(val(r,'CENTRO_COSTO','CENTRO COSTO','CENTRO DE COSTO'))||'SIN CENTRO DE COSTO',
+      sede:clean(val(r,'SEDE'))||'B2B / SIN SEDE',
+      amount:num(val(r,'MONTO S/.','MONTO S/','MONTO','FAC TOTAL')),
+      patientKey:baseKey,
+      clientKey:`${source}|${baseKey}`,
+      service,
+      facturador:clean(val(r,'FACTURADOR'))||'Campaña B2B',
+      date:toISODate(val(r,'FECHA','FECHA VENTA','FECHA DE VENTA')),
+      recordType:'B2B'
+    });
+  });
+  return {attendance:[...attMap.values()], sales};
+}
+
+function parsePrecisa(wb){
+  const sheetName=wb.SheetNames.find(n=>norm(n)==='HOJA1') || wb.SheetNames[0];
+  if(!sheetName) throw new Error(`El archivo ${DATA_FILES.precisa} no contiene hojas.`);
+  const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{defval:'',raw:false,dateNF:'yyyy-mm-dd'}).map(normalizedRow);
+  const sales=[];
+  rows.forEach(r=>{
+    const history=clean(val(r,'HISTORIA'));
+    const dni=clean(val(r,'DNI'));
+    const patient=clean(val(r,'PACIENTE'));
+    const key=history||dni||norm(patient);
+    if(!key) return;
+    let sede=clean(val(r,'SEDE'));
+    if(!sede){
+      sede=clean(val(r,'SEDEXX')).replace(/^L\./i,'');
+    }
+    sales.push({
+      source:'PRECISA',
+      invoice:clean(val(r,'INVNUM')),
+      medico:'SIN MÉDICO', institucion:'SIN INSTITUCIÓN',
+      center:clean(val(r,'CENTRO_COSTO','CENTRO COSTO','CENTRO DE COSTO'))||'SIN CENTRO DE COSTO',
+      sede:sede||'SIN SEDE',
+      amount:num(val(r,'FAC TOTAL','FACT TOTAL','TOTAL')),
+      clientKey:`PRECISA|${key}`,
+      service:clean(val(r,'DESCRIPCION','DESCRIPCIÓN','SERVICIO'))||'Sin descripción',
+      facturador:clean(val(r,'FACTURADOR'))||'Sin facturador',
+      date:toISODate(val(r,'FECHA')),
+      recordType:'PRECISA'
+    });
+  });
+  return sales;
+}
+
+function parseMasterPrecisa(wb){
+ const sheet=wb.SheetNames.find(n=>norm(n)==='BASE_PRECISA');
+ if(!sheet) throw new Error('El maestro no contiene Base_Precisa.');
+ return XLSX.utils.sheet_to_json(wb.Sheets[sheet],{defval:'',raw:false,dateNF:'yyyy-mm-dd'}).map(normalizedRow).filter(r=>clean(val(r,'INVNUM'))||clean(val(r,'PACIENTE'))).map(r=>{
+  const date=toISODate(val(r,'FECHA'));
+  const monthText=norm(val(r,'MES'));
+  let month=date?date.substring(0,7):'';
+  if(!month && monthText){const idx=MONTH_NAMES.findIndex(n=>n===monthText || (n==='SETIEMBRE'&&monthText==='SEPTIEMBRE'));if(idx>=0)month=`2026-${String(idx+1).padStart(2,'0')}`;}
+  const inv=clean(val(r,'INVNUM')),desc=clean(val(r,'DESCRIPCION'));
+  const patient=clean(val(r,'HISTORIA','DNI','PACIENTE'));
+  return {source:'PRECISA',recordType:'PRECISA',date,month,invoice:inv,
+   center:clean(val(r,'CENTRO_COSTO','CENTRO COSTO'))||'SIN CENTRO DE COSTO',
+   sede:clean(val(r,'SEDE','SEDEXX')).replace(/^L\./i,'')||'SIN SEDE',
+   amount:num(val(r,'FAC TOTAL','TOTAL','FACT TOTAL')),clientKey:`PRECISA|${patient||inv}`,
+   service:desc||'SIN DESCRIPCIÓN', facturador:clean(val(r,'FACTURADOR'))||'SIN FACTURADOR',
+   medico:clean(val(r,'MEDICO'))||'SIN MÉDICO',institucion:clean(val(r,'INSTITUCIÓN','INSTITUCION'))||'SIN INSTITUCIÓN',
+   cantidad:num(val(r,'CANTIDAD'))||1,monthSource:month};
+ });
+}
+function monthOf(r){return r.month || (r.date ? r.date.slice(0,7) : '');}
+function availableMonths(){return unique([...SALES,...preciseHistory].map(monthOf).filter(Boolean)).sort().reverse();}
+function monthLabel(m){if(!m||m==='TODOS')return 'Todos los meses';const [y,n]=m.split('-');return `${MONTH_NAMES[Number(n)-1]||n} ${y}`;}
+function selectedMonth(){return document.getElementById('fMonth').value;}
+function preciseModuleRows(){const m=selectedMonth();return preciseHistory.filter(r=>m==='TODOS'||monthOf(r)===m);}
+function initMonths(){const months=availableMonths();const el=document.getElementById('fMonth');const old=el.value;el.innerHTML='<option value="TODOS">TODOS LOS MESES</option>';months.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=monthLabel(m);el.appendChild(o)});el.value=months.includes(old)?old:'TODOS';}
+function moduleGroups(rows,key){const map=new Map();rows.forEach(r=>{const n=clean(r[key])||'SIN DATO';const x=map.get(n)||{label:n,amount:0,count:0,patients:new Set()};x.amount+=r.amount;x.count+=r.cantidad||1;x.patients.add(r.clientKey);map.set(n,x)});return [...map.values()].sort((a,b)=>b.amount-a.amount);}
+function categoryFor(amount,kind){
+ // Umbrales recuperados de las fórmulas de Cálculo_Categorías del maestro.
+ if(kind==='institucion' && amount<200)return 'Sin Categoría';
+ if(amount<500)return 'A';
+ if(amount<1000)return 'AA';
+ return 'AAA';
+}
+function categoryTag(cat){
+ const palette={'AAA':['#E7F7EA','#176B42'],'AA':['#E8F1FF','#285B91'],'A':['#FFF4D9','#866213'],'Sin Categoría':['#EDF0EF','#586D65']};
+ const [bg,color]=palette[cat]||palette['Sin Categoría'];
+ return `<span style="display:inline-block;padding:5px 11px;background:${bg};color:${color};border-radius:20px;font-weight:900;font-size:12px">${escapeHtml(cat)}</span>`;
+}
+function renderModule(){
+ const rows=preciseModuleRows(),total=sum(rows.map(x=>x.amount));
+ const configs={base:['Facturación histórica PRECISA','Mes','month'],medicos:['Facturación y categoría por médico','Médico','medico'],instituciones:['Facturación y categoría por institución','Institución','institucion'],detalle:['Facturación por servicio','Servicio','service']};
+ const [title,label,key]=configs[activeModule];
+ const isCategory=['medicos','instituciones'].includes(activeModule);
+ const kind=activeModule==='instituciones'?'institucion':'medico';
+ const allGroups=moduleGroups(rows,key);
+ const groups=allGroups.slice(0,10),colors=groups.map((_,i)=>COLORS[i%COLORS.length]);
+ document.getElementById('moduleTitle').textContent=title;
+ document.getElementById('moduleSubtitle').textContent=monthLabel(selectedMonth());
+ document.getElementById('moduleRightTitle').textContent=isCategory?'Distribución por categoría':'Participación por '+label.toLowerCase();
+ const distribution={AAA:{amount:0,count:0},AA:{amount:0,count:0},A:{amount:0,count:0},'Sin Categoría':{amount:0,count:0}};
+ if(isCategory)allGroups.forEach(g=>{
+   if(g.label==='SIN MÉDICO'||g.label==='SIN INSTITUCIÓN'||g.label==='SIN DATO')return;
+   const cat=categoryFor(g.amount,kind);
+   distribution[cat].amount+=g.amount;distribution[cat].count++;
+ });
+ const categories=Object.entries(distribution).filter(([,v])=>v.count>0);
+ const metrics=isCategory?`<div class="module-metric"><small>FACTURACIÓN</small><strong>${money(total)}</strong></div><div class="module-metric"><small>${kind==='medico'?'MÉDICOS':'INSTITUCIONES'} AAA</small><strong>${distribution.AAA.count}</strong></div><div class="module-metric"><small>AA</small><strong>${distribution.AA.count}</strong></div><div class="module-metric"><small>A</small><strong>${distribution.A.count}</strong></div>`:`<div class="module-metric"><small>FACTURACIÓN</small><strong>${money(total)}</strong></div><div class="module-metric"><small>REGISTROS</small><strong>${rows.length.toLocaleString('es-PE')}</strong></div><div class="module-metric"><small>PACIENTES ÚNICOS</small><strong>${new Set(rows.map(r=>r.clientKey)).size.toLocaleString('es-PE')}</strong></div>`;
+ document.getElementById('moduleMetrics').innerHTML=metrics;
+ const data=groups.map(g=>g.amount),max=Math.max(1,...data);
+ makeChart('module','chModule',{type:'bar',data:{labels:groups.map(g=>g.label),datasets:[{data,backgroundColor:colors,borderRadius:6,maxBarThickness:28}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,layout:{padding:{right:40}},plugins:{legend:{display:false},datalabels:{display:false},tooltip:{callbacks:{label:c=>isCategory?`${money(c.raw)} · ${categoryFor(c.raw,kind)}`:money(c.raw)}}},scales:{x:{beginAtZero:true,suggestedMax:max*1.18,ticks:{callback:v=>'S/ '+Number(v).toLocaleString('es-PE')}},y:{ticks:{font:{size:10}}}}}});
+ const rightData=isCategory?categories.map(([,v])=>v.count):data;
+ const rightLabels=isCategory?categories.map(([k])=>k):groups.map(g=>g.label);
+ const rightColors=isCategory?categories.map(([k])=>({'AAA':'#00A170','AA':'#4F7AA3','A':'#D5A021','Sin Categoría':'#A9B8B2'}[k])):colors;
+ const rightTotal=sum(rightData);
+ makeChart('moduleRight','chModuleRight',{type:'doughnut',data:{labels:rightLabels,datasets:[{data:rightData,backgroundColor:rightColors,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11,weight:'700'}}},datalabels:{display:ctx=>rightTotal>0&&ctx.dataset.data[ctx.dataIndex]/rightTotal>=.08,formatter:v=>pct(rightTotal?v/rightTotal*100:0),color:'#fff',font:{weight:'900',size:12}},tooltip:{callbacks:{label:c=>isCategory?`${c.raw} ${kind==='medico'?'médicos':'instituciones'} (${pct(rightTotal?c.raw/rightTotal*100:0)})`:`${money(c.raw)} (${pct(rightTotal?c.raw/rightTotal*100:0)})`}}}}});
+ document.getElementById('moduleTableTitle').textContent=title+' · '+monthLabel(selectedMonth());
+ if(isCategory){
+  document.getElementById('moduleTHead').innerHTML=`<tr><th>${escapeHtml(label)}</th><th>Facturación</th><th>Categoría</th><th>Cantidad</th><th>Pacientes</th><th>% total</th></tr>`;
+  document.getElementById('moduleTBody').innerHTML=allGroups.filter(g=>g.label!=='SIN MÉDICO'&&g.label!=='SIN INSTITUCIÓN').slice(0,300).map(g=>`<tr><td>${escapeHtml(g.label)}</td><td>${money(g.amount)}</td><td>${categoryTag(categoryFor(g.amount,kind))}</td><td>${g.count}</td><td>${g.patients.size}</td><td>${pct(total?g.amount/total*100:0)}</td></tr>`).join('')||'<tr><td colspan="6" style="text-align:center">No hay registros del período seleccionado</td></tr>';
+  document.getElementById('moduleCaveat').textContent=kind==='medico'?'Categorías del Excel: A = menos de S/ 500; AA = de S/ 500 a menos de S/ 1,000; AAA = S/ 1,000 o más. Se calculan con la facturación del período seleccionado.':'Categorías de institución del Excel: Sin Categoría = menos de S/ 200; A = de S/ 200 a menos de S/ 500; AA = de S/ 500 a menos de S/ 1,000; AAA = S/ 1,000 o más.';
+ }else{
+  document.getElementById('moduleTHead').innerHTML=`<tr><th>${escapeHtml(label)}</th><th>Facturación</th><th>Cantidad</th><th>Pacientes</th><th>% total</th></tr>`;
+  document.getElementById('moduleTBody').innerHTML=allGroups.slice(0,100).map(g=>`<tr><td>${escapeHtml(g.label)}</td><td>${money(g.amount)}</td><td>${g.count}</td><td>${g.patients.size}</td><td>${pct(total?g.amount/total*100:0)}</td></tr>`).join('')||'<tr><td colspan="5" style="text-align:center">No hay registros del período seleccionado</td></tr>';
+  document.getElementById('moduleCaveat').textContent='Valores calculados a partir de las filas de Base_Precisa. Este análisis no duplica facturación del archivo PRECISA.xlsx.';
+ }
+}
+
+function destroyChart(k){if(charts[k]){charts[k].destroy();delete charts[k]}}
+function noData(id,show){const e=document.getElementById(id);if(e)e.style.display=show?'flex':'none'}
+function makeChart(key, canvasId, cfg){
+  destroyChart(key);
+  charts[key]=new Chart(document.getElementById(canvasId),cfg);
+}
+const commonLegend={display:false};
+const gridColor='#EAF0ED';
+
+function allMainCampaigns(){
+  return unique(SALES.filter(x=>x.recordType==='B2B').map(x=>x.source));
+}
+function updateMainCampaignLabel(){
+  const all=allMainCampaigns();
+  const selected=all.filter(c=>selectedMainCampaigns.has(c));
+  const label=document.getElementById('mainCampaignLabel');
+  if(!label) return;
+  if(!all.length) label.textContent='Sin campañas';
+  else if(selected.length===all.length) label.textContent='Todas las campañas';
+  else if(selected.length===0) label.textContent='Selecciona campañas';
+  else if(selected.length===1) label.textContent=selected[0];
+  else label.textContent=`${selected.length} campañas seleccionadas`;
+}
+function renderMainCampaignMulti(){
+  const all=allMainCampaigns();
+  // Conserva selecciones válidas. En la primera carga, selecciona todas.
+  const valid=new Set([...selectedMainCampaigns].filter(c=>all.includes(c)));
+  if(!campaignsInitialized && all.length){ all.forEach(c=>valid.add(c)); campaignsInitialized=true; }
+  selectedMainCampaigns=valid;
+  const menu=document.getElementById('mainCampaignMenu');
+  if(!menu) return;
+  menu.innerHTML='';
+
+  const allRow=document.createElement('label');
+  allRow.className='multi-option';
+  const allCheck=document.createElement('input');
+  allCheck.type='checkbox';
+  allCheck.checked=all.length>0 && all.every(c=>selectedMainCampaigns.has(c));
+  allCheck.addEventListener('change',()=>{
+    selectedMainCampaigns = allCheck.checked ? new Set(all) : new Set();
+    renderMainCampaignMulti();
+    updateSalesView();
+  });
+  allRow.append(allCheck,document.createTextNode('Todas las campañas'));
+  menu.appendChild(allRow);
+  const divider=document.createElement('div'); divider.className='multi-divider'; menu.appendChild(divider);
+
+  all.forEach(c=>{
+    const row=document.createElement('label'); row.className='multi-option';
+    const cb=document.createElement('input'); cb.type='checkbox'; cb.value=c; cb.checked=selectedMainCampaigns.has(c);
+    cb.addEventListener('change',()=>{
+      if(cb.checked) selectedMainCampaigns.add(c); else selectedMainCampaigns.delete(c);
+      renderMainCampaignMulti();
+      updateSalesView();
+    });
+    row.append(cb,document.createTextNode(c));
+    menu.appendChild(row);
+  });
+  updateMainCampaignLabel();
+}
+function toggleMainCampaignVisibility(){
+  const source=document.getElementById('fSource').value;
+  const box=document.getElementById('mainCampaignBox');
+  if(!box) return;
+  box.classList.toggle('hidden-filter',source!=='B2B');
+  if(source!=='B2B') document.getElementById('mainCampaignMulti')?.classList.remove('open');
+}
+function updateControls(){
+  const sourceEl=document.getElementById('fSource');
+  const prevSource=sourceEl.value;
+  sourceEl.innerHTML='<option value="TODOS">TODAS</option><option value="B2B">B2B</option><option value="PRECISA">PRECISA</option>';
+  sourceEl.value=['TODOS','B2B','PRECISA'].includes(prevSource)?prevSource:'TODOS';
+  initMonths();
+  refreshSelect('fCenter',unique(SALES.map(x=>x.center)),'TODOS');
+  refreshSelect('fSede',unique(SALES.map(x=>x.sede)),'TODAS');
+  refreshSelect('fCampaign',unique(ATTENDANCE.map(x=>x.campaign)),'TODAS LAS CAMPAÑAS');
+  renderMainCampaignMulti();
+  toggleMainCampaignVisibility();
+}
+function filteredSales(){
+  const s=document.getElementById('fSource').value;
+  const c=document.getElementById('fCenter').value;
+  const d=document.getElementById('fSede').value;
+  const selected=[...selectedMainCampaigns];
+  const month=selectedMonth();
+  return SALES.filter(r=>{
+    const sourceOk = s==='TODOS' || (s==='B2B' ? r.recordType==='B2B' : r.source==='PRECISA');
+    const campaignOk = s!=='B2B' || selected.includes(r.source);
+    return sourceOk && campaignOk && (month==='TODOS'||monthOf(r)===month) && (c==='TODOS'||r.center===c) && (d==='TODOS'||r.sede===d);
+  });
+}
+function campaignNames(){
+  return unique([
+    ...ATTENDANCE.map(x=>x.campaign),
+    ...SALES.filter(x=>x.recordType==='B2B').map(x=>x.source)
+  ]);
+}
+function campaignStats(camp){
+  const camps=camp==='TODOS'?campaignNames():[camp];
+  const month=selectedMonth();
+  const att=ATTENDANCE.filter(x=>camps.includes(x.campaign)&&(month==='TODOS'||monthOf(x)===month));
+  const bSales=SALES.filter(x=>x.recordType==='B2B' && camps.includes(x.source)&&(month==='TODOS'||monthOf(x)===month));
+  const sold=new Set(bSales.map(x=>x.patientKey || x.clientKey)).size;
+  const revenue=sum(bSales.map(x=>x.amount));
+  return {att:att.length,sold,revenue,conv:att.length?sold/att.length*100:0,ticket:sold?revenue/sold:0,lost:Math.max(0,att.length-sold)};
+}
+
+function updateHeaderDates(){
+  const dates=SALES.filter(x=>x.source==='PRECISA'&&x.date).map(x=>x.date).sort();
+  const header=document.getElementById('headerMeta');
+  const footer=document.getElementById('footerSource');
+  const formatDate=iso=>{
+    const d=new Date(iso+'T00:00:00');
+    return d.toLocaleDateString('es-PE',{day:'2-digit',month:'2-digit',year:'numeric'});
+  };
+  if(dates.length){
+    header.innerHTML=`Reporte Ejecutivo ${new Date().getFullYear()}<br>PRECISA: ${formatDate(dates[0])} – ${formatDate(dates[dates.length-1])}`;
+    footer.textContent=`Fuente: ${DATA_FILES.b2b} + ${DATA_FILES.precisa} · Corte PRECISA ${formatDate(dates[dates.length-1])}`;
+  }else{
+    header.innerHTML=`Reporte Ejecutivo ${new Date().getFullYear()}<br>Archivos locales actualizados`;
+    footer.textContent=`Fuente: ${DATA_FILES.b2b} + ${DATA_FILES.precisa}`;
+  }
+}
+
+function updateSalesView(){
+  const data=filteredSales();
+  const revenue=sum(data.map(x=>x.amount));
+  const clients=new Set(data.map(x=>x.clientKey)).size;
+  const ticket=clients?revenue/clients:0;
+
+  document.getElementById('kRevenue').textContent=money(revenue);
+  document.getElementById('kClients').textContent=clients.toLocaleString('es-PE');
+  document.getElementById('kTicket').textContent=money(ticket);
+
+  drawSalesCharts(data);
+  const month=selectedMonth(),hasUnpaid=SALES.some(x=>x.recordType==='B2B'&&!monthOf(x));
+  const advisory=document.getElementById('monthAdvisory');
+  advisory.style.display=month!=='TODOS'&&hasUnpaid?'block':'none';
+  advisory.textContent='Período: '+monthLabel(month)+'. B2B no tiene fecha de venta en la base entregada y queda excluido de los resultados mensuales. Agrega una columna FECHA a VENTA y REGISTRO para integrarlo correctamente.';
+  renderModule();
+}
+
+function drawSalesCharts(data){
+  const sourceFilter=document.getElementById('fSource').value;
+  const sourceTitle=document.getElementById('sourceChartTitle');
+  const sourceSubtitle=document.getElementById('sourceChartSubtitle');
+  const sourceNote=document.getElementById('sourceChartNote');
+
+  let bySource=[];
+  if(sourceFilter==='TODOS'){
+    const totalB2B=sum(data.filter(x=>x.recordType==='B2B').map(x=>x.amount));
+    const totalPrecisa=sum(data.filter(x=>x.recordType==='PRECISA').map(x=>x.amount));
+    if(data.some(x=>x.recordType==='B2B')) bySource.push(['B2B',totalB2B,'#00A170']);
+    if(data.some(x=>x.recordType==='PRECISA')) bySource.push(['PRECISA',totalPrecisa,'#4F7AA3']);
+    if(sourceTitle) sourceTitle.textContent='Comparativo B2B vs PRECISA';
+    if(sourceSubtitle) sourceSubtitle.textContent='Facturación consolidada por fuente';
+    if(sourceNote) sourceNote.textContent='Cuando la fuente está en TODAS, se suma toda la facturación B2B y se compara directamente contra PRECISA.';
+  }else if(sourceFilter==='B2B'){
+    bySource=groupSum(data.filter(x=>x.recordType==='B2B'),'source').map((x,i)=>[x[0],x[1],COLORS[i%COLORS.length]]);
+    if(sourceTitle) sourceTitle.textContent='Facturación por campañas B2B';
+    if(sourceSubtitle) sourceSubtitle.textContent='Desglose de campañas filtradas';
+    if(sourceNote) sourceNote.textContent='Cuando la fuente está en B2B, el gráfico muestra cada campaña por separado. Si eliges campañas en el multiselect, solo se grafican esas campañas.';
+  }else{
+    const totalPrecisa=sum(data.filter(x=>x.recordType==='PRECISA').map(x=>x.amount));
+    if(data.some(x=>x.recordType==='PRECISA')) bySource.push(['PRECISA',totalPrecisa,'#4F7AA3']);
+    if(sourceTitle) sourceTitle.textContent='Facturación de PRECISA';
+    if(sourceSubtitle) sourceSubtitle.textContent='Fuente seleccionada';
+    if(sourceNote) sourceNote.textContent='Cuando la fuente está en PRECISA, se muestra únicamente la facturación de esa base según los filtros aplicados.';
+  }
+
+  const byCenter=groupSum(data,'center'), bySede=groupSum(data,'sede');
+  const services=groupSum(data,'service').slice(0,8);
+  const precise=data.filter(x=>x.source==='PRECISA');
+  const daily=groupSum(precise.filter(x=>x.date),'date').sort((a,b)=>a[0].localeCompare(b[0]));
+
+  noData('ndSource',!bySource.length); noData('ndCenter',!byCenter.length); noData('ndSede',!bySede.length); noData('ndService',!services.length);
+  noData('ndDaily',!daily.length);
+
+  const sourceLabels=bySource.map(x=>x[0]);
+  const sourceValues=bySource.map(x=>x[1]);
+  const sourceColors=bySource.map(x=>x[2]);
+  const totalSource=sum(sourceValues);
+  const maxSource=Math.max(...sourceValues,0);
+  const sourceAxisMax=maxSource > 0 ? maxSource * 1.22 : 100;
+
+  makeChart('source','chSource',{
+    type:'bar',
+    data:{labels:sourceLabels,datasets:[{label:'Facturación',data:sourceValues,backgroundColor:sourceColors,borderRadius:10,borderSkipped:false,maxBarThickness:72}]},
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24}},plugins:{legend:commonLegend,
+      tooltip:{callbacks:{label:c=>`${money(c.raw)} · ${pct(totalSource?c.raw/totalSource*100:0)}`}},
+      datalabels:{anchor:'end',align:'top',offset:4,clip:false,clamp:true,formatter:(v)=>`${money(v)}
+${pct(totalSource?v/totalSource*100:0)}`,
+        color:'#1C6E57',font:{weight:'900',size:11},textAlign:'center'}},
+      scales:{x:{grid:{display:false},ticks:{font:{weight:'700'}}},y:{beginAtZero:true,max:sourceAxisMax,grid:{color:gridColor},ticks:{callback:v=>'S/ '+Number(v).toLocaleString('es-PE')}}}
+    }
+  });
+
+  const sourceBox=document.getElementById('sourceBreakdown');
+  sourceBox.innerHTML=bySource.map((x)=>`<div class="breakdown-item"><span class="breakdown-dot" style="background:${x[2]}"></span><div><strong>${escapeHtml(x[0])}</strong><small>${pct(totalSource?x[1]/totalSource*100:0)} del total</small><span class="amount">${money(x[1])}</span></div></div>`).join('') + (totalSource?`<div class="breakdown-summary">Total mostrado: ${money(totalSource)}</div>`:'');
+
+  const centerTotal=sum(byCenter.map(x=>x[1]));
+  makeChart('center','chCenter',{
+    type:'doughnut',
+    data:{labels:byCenter.map(x=>x[0]),datasets:[{data:byCenter.map(x=>x[1]),backgroundColor:byCenter.map((_,i)=>COLORS[i%COLORS.length]),borderWidth:3,borderColor:'#fff',hoverOffset:5}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'57%',layout:{padding:14},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${money(c.raw)} (${pct(centerTotal?c.raw/centerTotal*100:0)})`}},
+        datalabels:{display:ctx=>centerTotal>0 && ctx.dataset.data[ctx.dataIndex]/centerTotal>=.075,
+          formatter:v=>pct(centerTotal?v/centerTotal*100:0),color:'#fff',textStrokeColor:'rgba(0,0,0,.30)',textStrokeWidth:2,
+          font:{weight:'900',size:15},clamp:true}}
+    }
+  });
+  document.getElementById('centerBreakdown').innerHTML=byCenter.map((x,i)=>`<div class="breakdown-item"><span class="breakdown-dot" style="background:${COLORS[i%COLORS.length]}"></span><div><strong>${escapeHtml(x[0])}</strong><small>${pct(centerTotal?x[1]/centerTotal*100:0)}</small><span class="amount">${money(x[1])}</span></div></div>`).join('');
+  makeChart('sede','chSede',{type:'bar',data:{labels:bySede.map(x=>x[0]),datasets:[{data:bySede.map(x=>x[1]),backgroundColor:COLORS,borderRadius:8,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:commonLegend,tooltip:{callbacks:{label:c=>money(c.raw)}},datalabels:{anchor:'end',align:'top',formatter:v=>money(v),color:'#1C6E57',font:{weight:'700',size:10}}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:gridColor},ticks:{callback:v=>'S/ '+Number(v).toLocaleString('es-PE')}}}}});
+  makeChart('service','chService',{type:'bar',data:{labels:services.map(x=>x[0]),datasets:[{data:services.map(x=>x[1]),backgroundColor:'#00A170',borderRadius:7,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:commonLegend,tooltip:{callbacks:{label:c=>money(c.raw)}},datalabels:{anchor:'end',align:'right',formatter:v=>money(v),color:'#1C6E57',font:{weight:'700',size:9}}},scales:{x:{beginAtZero:true,grid:{color:gridColor},ticks:{callback:v=>'S/ '+Number(v).toLocaleString('es-PE')}},y:{grid:{display:false},ticks:{font:{size:9}}}}}});
+  makeChart('daily','chDaily',{type:'line',data:{labels:daily.map(x=>{const d=new Date(x[0]+'T00:00:00');return d.toLocaleDateString('es-PE',{day:'2-digit',month:'2-digit'})}),datasets:[{label:'Facturación',data:daily.map(x=>x[1]),borderColor:'#00A170',backgroundColor:'rgba(0,161,112,.12)',fill:true,tension:.3,pointRadius:4,pointBackgroundColor:'#00A170'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:commonLegend,tooltip:{callbacks:{label:c=>money(c.raw)}},datalabels:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:gridColor},ticks:{callback:v=>'S/ '+Number(v).toLocaleString('es-PE')}}}}});
+}
+
+function updateB2B(){
+  const camp=document.getElementById('fCampaign').value;
+  const s=campaignStats(camp);
+  document.getElementById('bAtt').textContent=s.att.toLocaleString('es-PE');
+  document.getElementById('bSold').textContent=s.sold.toLocaleString('es-PE');
+  document.getElementById('bLost').textContent=s.lost.toLocaleString('es-PE');
+  document.getElementById('bConv').textContent=pct(s.conv);
+  document.getElementById('bTicket').textContent=money(s.ticket);
+
+  makeChart('funnel','chFunnel',{type:'bar',data:{labels:['Atendidos','Vendidos','No convertidos'],datasets:[{data:[s.att,s.sold,s.lost],backgroundColor:['#1C6E57','#00A170','#D5A021'],borderRadius:9,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:commonLegend,datalabels:{anchor:'end',align:'top',color:'#243B36',font:{weight:'900',size:12}}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:gridColor},ticks:{precision:0}}}}});
+
+  const names=campaignNames();
+  const stats=names.map(c=>campaignStats(c));
+  makeChart('campaign','chCampaign',{type:'bar',data:{labels:names,datasets:[{label:'Atendidos',data:stats.map(x=>x.att),backgroundColor:'#1C6E57',borderRadius:6},{label:'Vendidos',data:stats.map(x=>x.sold),backgroundColor:'#99E066',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{usePointStyle:true,boxWidth:10}},datalabels:{anchor:'end',align:'top',font:{weight:'800',size:10}}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:gridColor},ticks:{precision:0}}}}});
+  renderCampaignTable();
+}
+function renderCampaignTable(){
+  const tbody=document.getElementById('campaignTable');
+  tbody.innerHTML='';
+  campaignNames().forEach(c=>{
+    const s=campaignStats(c);
+    const status=s.conv>=50?'<span class="badge">ALTO</span>':s.conv>=30?'<span class="badge warn">MEDIO</span>':'<span class="badge danger">BAJO</span>';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><strong>${escapeHtml(c)}</strong></td><td>${s.att}</td><td>${s.sold}</td><td>${pct(s.conv)}</td><td>${pct(100-s.conv)}</td><td>${money(s.revenue)}</td><td>${money(s.ticket)}</td><td>${status}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+async function loadAllData(manual=false){
+  if(isLoading) return;
+  isLoading=true;
+  const btn=document.getElementById('btnReload');
+  if(btn){btn.disabled=true;btn.textContent='⟳ Leyendo archivos...';}
+  setStatus(`Leyendo ${DATA_FILES.b2b} y ${DATA_FILES.precisa}...`);
+  try{
+    if(location.protocol==='file:'){
+      throw new Error('El navegador bloquea la lectura automática si abres el HTML con doble clic. Ejecuta INICIAR_DASHBOARD.bat y abre el dashboard desde http://localhost:5500.');
+    }
+    if(typeof XLSX==='undefined') throw new Error('No se pudo cargar el lector de Excel (SheetJS). Verifica tu conexión a internet.');
+    const [b2bWb,precisaWb,masterWb]=await Promise.all([fetchWorkbook(DATA_FILES.b2b),fetchWorkbook(DATA_FILES.precisa),fetchWorkbook(DATA_FILES.master)]);
+    const b2b=parseB2B(b2bWb);
+    const precisa=parsePrecisa(precisaWb);
+    preciseHistory=parseMasterPrecisa(masterWb);
+    // El maestro es la fuente oficial. Solo agregar filas del otro PRECISA cuando
+    // su INVNUM no existe en el maestro: evita contar dos veces el mismo documento.
+    const knownInvoices=new Set(preciseHistory.map(r=>r.invoice).filter(Boolean));
+    const additions=precisa.filter(r=>!knownInvoices.has(r.invoice));
+    SALES=[...b2b.sales,...preciseHistory,...additions];
+    ATTENDANCE=b2b.attendance;
+
+    updateControls();
+    updateHeaderDates();
+    updateSalesView();
+    updateB2B();
+
+    const now=new Date().toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    setStatus(`Actualizado ${now} · ${ATTENDANCE.length} atendidos B2B · ${SALES.length} líneas de venta/facturación`);
+  }catch(err){
+    console.error(err);
+    setStatus(`Error: ${err.message}`,true);
+    if(manual) alert(err.message);
+  }finally{
+    isLoading=false;
+    if(btn){btn.disabled=false;btn.textContent='⟳ Actualizar datos';}
+  }
+}
+
+document.getElementById('fSource').addEventListener('change',()=>{
+  toggleMainCampaignVisibility();
+  updateSalesView();
+});
+['fCenter','fSede'].forEach(id=>document.getElementById(id).addEventListener('change',updateSalesView));
+document.getElementById('fCampaign').addEventListener('change',updateB2B);
+document.getElementById('fMonth').addEventListener('change',()=>{updateSalesView();updateB2B()});
+document.getElementById('togglePrecisaDetalle').addEventListener('click',()=>{
+  const panel=document.getElementById('precisaPanel');
+  const button=document.getElementById('togglePrecisaDetalle');
+  const opening=panel.hidden;
+  panel.hidden=!opening;
+  button.setAttribute('aria-expanded',String(opening));
+  if(opening){
+    renderModule();
+    requestAnimationFrame(()=>{['module','moduleRight'].forEach(k=>charts[k]?.resize());});
+  }
+});
+document.getElementById('toggleConversionB2B').addEventListener('click',()=>{
+  const panel=document.getElementById('conversionB2BPanel');
+  const button=document.getElementById('toggleConversionB2B');
+  const opening=panel.hidden;
+  panel.hidden=!opening;
+  button.setAttribute('aria-expanded',String(opening));
+  if(opening){
+    requestAnimationFrame(()=>{['funnel','campaign'].forEach(k=>charts[k]?.resize());});
+  }
+});
+document.querySelectorAll('[data-module]').forEach(b=>b.addEventListener('click',()=>{activeModule=b.dataset.module;document.querySelectorAll('[data-module]').forEach(x=>x.classList.toggle('active',x===b));renderModule()}));
+document.getElementById('mainCampaignToggle').addEventListener('click',(e)=>{
+  e.stopPropagation();
+  document.getElementById('mainCampaignMulti').classList.toggle('open');
+});
+document.getElementById('mainCampaignMenu').addEventListener('click',e=>e.stopPropagation());
+document.addEventListener('click',()=>document.getElementById('mainCampaignMulti')?.classList.remove('open'));
+
+if(typeof Chart!=='undefined'){
+  if(typeof ChartDataLabels!=='undefined') Chart.register(ChartDataLabels);
+  Chart.defaults.font.family="'Roboto', Arial, sans-serif";
+  Chart.defaults.color='#6B7E78';
+  loadAllData(false);
+  // Actualización manual: refrescar el navegador al reemplazar los Excel.
+}else{
+  setStatus('No se pudo cargar Chart.js. Verifica tu conexión a internet.',true);
+}
+</script>
+
+</body>
+</html>
