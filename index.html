@@ -176,7 +176,7 @@ tbody tr:hover{background:#FBFDFC}
 </div>
 
 <h2 class="section-title">Desempeño comercial consolidado</h2>
-<p class="section-sub">Cuando seleccionas TODAS las fuentes, se suma la facturación de todas las campañas B2B y se compara con PRECISA. DOREL e IBR no incluyen fecha ni sede en la base entregada; PRECISA sí permite seguimiento temporal y por sede.</p>
+<p class="section-sub">Cuando seleccionas TODAS las fuentes, se suma la facturación de todas las campañas B2B y se compara con PRECISA. Las campañas B2B con fecha se integran al filtro mensual; PRECISA mantiene su análisis por sede y período.</p>
 <div class="charts-grid">
   <div class="chart-card">
     <div class="chart-head"><h3 id="sourceChartTitle">Comparativo B2B vs PRECISA</h3><span id="sourceChartSubtitle">Facturación consolidada por fuente</span></div>
@@ -199,8 +199,8 @@ tbody tr:hover{background:#FBFDFC}
   </div>
   <div class="chart-card">
     <div class="chart-head"><h3>Evolución diaria de facturación</h3><span>PRECISA · base con fecha</span></div>
-    <div class="chart-wrap"><canvas id="chDaily"></canvas><div class="no-data" id="ndDaily">La selección actual no contiene registros con fecha. DOREL e IBR no tienen fecha de venta en el Excel.</div></div>
-    <div class="chart-note">La tendencia temporal solo puede calcularse con PRECISA porque las campañas DOREL e IBR no contienen fecha de venta.</div>
+    <div class="chart-wrap"><canvas id="chDaily"></canvas><div class="no-data" id="ndDaily">La selección actual no contiene registros PRECISA con fecha.</div></div>
+    <div class="chart-note">La evolución diaria muestra los registros PRECISA del período seleccionado.</div>
   </div>
 </div>
 
@@ -347,6 +347,16 @@ function toISODate(v){
   }
   return null;
 }
+function monthFromCell(v,date){
+  if(date) return date.slice(0,7);
+  const s=norm(v); if(!s) return '';
+  const dateValue=toISODate(v); if(dateValue && /^\d{4}-\d{2}/.test(dateValue)) return dateValue.slice(0,7);
+  const names=['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SETIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+  const i=names.findIndex(n=>s.includes(n)||(n==='SETIEMBRE'&&s.includes('SEPTIEMBRE')));
+  if(i<0) return '';
+  const year=s.match(/20\d{2}/);
+  return `${year?year[0]:'2026'}-${String(i+1).padStart(2,'0')}`;
+}
 function unique(arr){return [...new Set(arr.filter(x=>clean(x)!==''))].sort((a,b)=>String(a).localeCompare(String(b),'es'))}
 function groupSum(data,key){
   const m={};
@@ -376,7 +386,12 @@ function refreshSelect(id, values, allLabel){
 function sheetRows(wb, name){
   const sheetName=wb.SheetNames.find(n=>norm(n)===norm(name));
   if(!sheetName) throw new Error(`No existe la hoja "${name}" en ${name==='Hoja1'?DATA_FILES.precisa:DATA_FILES.b2b}.`);
-  return XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {defval:'', raw:false, dateNF:'yyyy-mm-dd'});
+  const ws=wb.Sheets[sheetName];
+   const grid=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:true});
+   const required=name==='REGISTRO'?['DNI','CAMPAÑA']:['DNI','CAMPAÑA','MONTO'];
+   const headerIndex=grid.findIndex(row=>required.every(term=>row.some(cell=>norm(cell).includes(norm(term)))));
+   if(headerIndex<0) throw new Error(`No se reconocen las cabeceras de ${name}. Revisa DNI, CAMPAÑA y las columnas obligatorias.`);
+   return XLSX.utils.sheet_to_json(ws,{range:headerIndex,defval:'',raw:true});
 }
 async function fetchWorkbook(file){
   const url='./'+encodeURIComponent(file)+'?v='+Date.now();
@@ -397,7 +412,9 @@ function parseB2B(wb){
     const name=clean(val(r,'NOMBRE COMPLETO','NOMBRE','PACIENTE'));
     if(!campaign || (!dni && !name)) return;
     const baseKey=dni||norm(name);
-    const clientKey=`${campaign}|${baseKey}`;
+    const rowDate=toISODate(val(r,'FECHA','FECHA ATENCION','FECHA DE ATENCION'));
+     const rowMonth=monthFromCell(val(r,'MES'),rowDate);
+     const clientKey=`${campaign}|${rowMonth||'SIN MES'}|${baseKey}`;
     attMap.set(clientKey,{
       campaign,
       date:toISODate(val(r,'FECHA','FECHA ATENCION','FECHA DE ATENCION')),
@@ -686,7 +703,7 @@ function updateSalesView(){
   const month=selectedMonth(),hasUnpaid=SALES.some(x=>x.recordType==='B2B'&&!monthOf(x));
   const advisory=document.getElementById('monthAdvisory');
   advisory.style.display=month!=='TODOS'&&hasUnpaid?'block':'none';
-  advisory.textContent='Período: '+monthLabel(month)+'. B2B no tiene fecha de venta en la base entregada y queda excluido de los resultados mensuales. Agrega una columna FECHA a VENTA y REGISTRO para integrarlo correctamente.';
+  advisory.textContent='Período: '+monthLabel(month)+'. Los registros B2B sin FECHA ni MES válidos quedan fuera del filtro mensual. Los demás se incluyen normalmente.';
   renderModule();
 }
 
