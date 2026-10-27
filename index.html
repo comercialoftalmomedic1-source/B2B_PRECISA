@@ -60,6 +60,7 @@ select:focus,.btn:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,
 .btn{display:flex;align-items:center;justify-content:center;gap:7px}
 .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
 .btn.ghost{background:#fff}
+.goal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:8px 0 18px}.goal-card{padding:16px;border:1px solid var(--line);border-radius:13px;background:#fff;box-shadow:var(--shadow-soft)}.goal-card h3{font-family:var(--title-font);font-size:14px;color:var(--primary-dark);margin:0 0 10px}.goal-card .goal-main{font-size:21px;font-weight:900;color:var(--ink);margin-bottom:7px}.goal-card .goal-extra{font-size:11px;color:var(--muted);line-height:1.9}.goal-card .goal-extra b{color:var(--ink)}.goal-track{height:9px;border-radius:20px;background:#E5EEE9;overflow:hidden;margin:10px 0 6px}.goal-fill{height:100%;background:#00A170;border-radius:20px;transition:width .25s}.goal-note{font-size:10.5px;color:var(--muted);margin:0 0 12px}@media(max-width:760px){.goal-grid{grid-template-columns:1fr}}
 .metrics-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:16px 0 23px}
 .kpi-card{position:relative;min-height:118px;padding:19px 15px 14px;overflow:hidden;background:var(--soft);border:1px solid var(--line);border-radius:13px;box-shadow:0 3px 10px rgba(19,69,52,.035)}
 .kpi-card:before{content:'';position:absolute;top:0;left:0;width:100%;height:5px;background:var(--primary)}
@@ -125,9 +126,35 @@ tbody tr:hover{background:#FBFDFC}
 .precisa-trigger:hover,.precisa-trigger:focus-visible{filter:brightness(.94);outline:3px solid rgba(153,224,102,.4)}
 .precisa-trigger .chevron{display:inline-block;transition:transform .2s ease;font-size:17px}
 .precisa-trigger[aria-expanded="true"] .chevron{transform:rotate(180deg)}
+.trend-chip{display:inline-block;border-radius:20px;padding:5px 9px;font-weight:900;font-size:11px;white-space:nowrap}
+.trend-up{background:#E7F7EA;color:#176B42}
+.trend-down{background:#FBE9E7;color:#A33935}
+.trend-flat{background:#EDF0EF;color:#586D65}
+.trend-new{background:#E8F1FF;color:#285B91}
 .precisa-panel[hidden]{display:none!important}
 .precisa-panel{padding:4px 0 18px}
 @media(max-width:760px){.precisa-trigger-wrap{grid-template-columns:1fr}}
+
+/* KPI gerenciales: tarjetas inspiradas en la referencia proporcionada */
+.executive-kpis{margin:16px 0 23px}
+.exec-kpi-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.exec-kpi-grid+.exec-kpi-grid{margin-top:16px}
+.exec-kpi{position:relative;min-width:0;min-height:136px;padding:20px 16px 16px;background:#F5FAF7;border:1px solid #DFEAE5;border-radius:14px;box-shadow:0 5px 14px rgba(19,69,52,.045);overflow:hidden;display:flex;flex-direction:column;justify-content:flex-start}
+.exec-kpi:before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:#00A170}
+.exec-kpi>span{display:block;color:#537369;font-size:10px;font-weight:900;letter-spacing:.36px;line-height:1.4}
+.exec-kpi>strong{display:block;color:#163E3B;font-family:var(--title-font);font-size:clamp(21px,2vw,30px);font-weight:900;line-height:1.18;margin-top:19px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.exec-kpi>small{display:block;margin-top:8px;font-size:10px;font-weight:600;color:#6B7E78;line-height:1.45}
+.exec-kpi>small b{color:#24594D}
+.exec-kpi.accent-green:before{background:#00A170}.exec-kpi.accent-teal:before{background:#207861}.exec-kpi.accent-lime:before{background:#9BE66B}.exec-kpi.accent-blue:before{background:#5983A8}.exec-kpi.accent-mint:before{background:#61BF8E}.exec-kpi.accent-amber:before{background:#DBAB2B}
+.exec-kpi.exec-remaining{background:linear-gradient(120deg,#00A578,#19755C);border-color:#15966C;box-shadow:0 9px 19px rgba(0,161,112,.16)}
+.exec-kpi.exec-remaining:before{display:none}.exec-kpi.exec-remaining>span,.exec-kpi.exec-remaining>strong,.exec-kpi.exec-remaining>small{color:#fff}
+.exec-track{height:5px;border-radius:6px;background:#E0EBE5;overflow:hidden;margin-top:auto;transform:translateY(8px)}
+.exec-track>div{height:100%;width:0%;border-radius:6px;background:#00A170;transition:width .25s}
+.executive-kpis .goal-note{margin:11px 2px 0}
+@media(max-width:1100px){.exec-kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:680px){.exec-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.exec-kpi{min-height:118px;padding:16px 12px}.exec-kpi>strong{font-size:22px;margin-top:15px}}
+@media(max-width:380px){.exec-kpi-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -169,14 +196,27 @@ tbody tr:hover{background:#FBFDFC}
 
 <div id="monthAdvisory" class="note-box" style="display:none;margin:0 0 14px"></div>
 <div id="dataStatus" style="font-size:11px;color:#6b7e78;margin:0 0 8px"></div>
-<div class="metrics-grid">
-  <div class="kpi-card"><span>Facturación total</span><div id="kRevenue">S/ 0.00</div></div>
-  <div class="kpi-card"><span>Clientes / pacientes únicos</span><div id="kClients">0</div></div>
-  <div class="kpi-card"><span>Ticket promedio</span><div id="kTicket">S/ 0.00</div></div>
-</div>
+<section class="executive-kpis" aria-label="Indicadores gerenciales de facturación y metas">
+  <div class="exec-kpi-grid top-kpis">
+    <div class="exec-kpi accent-green"><span>FACTURACIÓN TOTAL</span><strong id="kRevenue">S/ 0.00</strong><small>Según filtros seleccionados</small></div>
+    <div class="exec-kpi accent-teal"><span>PACIENTES ÚNICOS</span><strong id="kClients">0</strong><small>Según filtros seleccionados</small></div>
+    <div class="exec-kpi accent-lime"><span>TICKET PROMEDIO</span><strong id="kTicket">S/ 0.00</strong><small>Según filtros seleccionados</small></div>
+    <div class="exec-kpi accent-blue"><span>FACTURACIÓN B2B</span><strong id="goalB2BActual">—</strong><small>Global del período</small></div>
+    <div class="exec-kpi accent-mint"><span>FACTURACIÓN PRECISA</span><strong id="goalPrecisaActual">—</strong><small>Global del período</small></div>
+  </div>
+  <div class="exec-kpi-grid bottom-kpis">
+    <div class="exec-kpi accent-blue"><span>META B2B</span><strong id="goalB2BTarget">—</strong><small>Falta: <b id="goalB2BRemain">—</b> · Avance: <b id="goalB2BPct">—</b></small><div class="exec-track"><div id="goalB2BFill"></div></div></div>
+    <div class="exec-kpi accent-mint"><span>META PRECISA</span><strong id="goalPrecisaTarget">—</strong><small>Falta: <b id="goalPrecisaRemain">—</b> · Avance: <b id="goalPrecisaPct">—</b></small><div class="exec-track"><div id="goalPrecisaFill"></div></div></div>
+    <div class="exec-kpi accent-green"><span>% ALCANCE TOTAL</span><strong id="goalTotalPct">—</strong><small>Cumplimiento B2B + PRECISA</small><div class="exec-track"><div id="goalTotalFill"></div></div></div>
+    <div class="exec-kpi accent-amber"><span>META TOTAL</span><strong id="goalTotalTarget">—</strong><small>Objetivo consolidado</small></div>
+    <div class="exec-kpi exec-remaining"><span>OBJETIVO RESTANTE</span><strong id="goalTotalRemain">—</strong><small>Pendiente para cumplir la meta total</small></div>
+  </div>
+  <p class="goal-note" id="goalsContext" style="display:none" hidden></p>
+  <span id="goalTotalActual" hidden></span>
+</section>
 
 <h2 class="section-title">Desempeño comercial consolidado</h2>
-<p class="section-sub">Cuando seleccionas TODAS las fuentes, se suma la facturación de todas las campañas B2B y se compara con PRECISA. Las campañas B2B con fecha se integran al filtro mensual; PRECISA mantiene su análisis por sede y período.</p>
+
 <div class="charts-grid">
   <div class="chart-card">
     <div class="chart-head"><h3 id="sourceChartTitle">Comparativo B2B vs PRECISA</h3><span id="sourceChartSubtitle">Facturación consolidada por fuente</span></div>
@@ -210,7 +250,7 @@ tbody tr:hover{background:#FBFDFC}
 </div>
 <section id="precisaPanel" class="precisa-panel" hidden>
  <h2 class="section-title">PRECISA Detalle</h2>
- <p class="section-sub">Cuatro vistas del Excel maestro. El selector de mes controla los reportes con fecha. Las categorías de médicos e instituciones se calculan con los umbrales de facturación del Excel original para el mes seleccionado.</p>
+ <p class="section-sub">Cuatro vistas de PRECISA_MAESTRO.xlsx (independientes de la facturación principal, que proviene de PRECISA.xlsx). El selector de mes controla los reportes con fecha. Las categorías de médicos e instituciones se calculan con los umbrales de facturación del Excel original para el mes seleccionado.</p>
  <div class="module-buttons" id="moduleButtons">
   <button class="module-btn active" type="button" data-module="base">Base_Precisa</button>
   <button class="module-btn" type="button" data-module="medicos">Categoría_Médicos</button>
@@ -281,6 +321,8 @@ let selectedMainCampaigns = new Set();
 let campaignsInitialized = false;
 let preciseHistory = [];
 let activeModule = 'base';
+let GOALS = new Map();
+const GOAL_FALLBACK_CSV = 'MES;B2B;PRECISA\nJUNIO;10000;30000\nJULIO;10000;40000\nAGOSTO;10000;40000\nSETIEMBRE;10000;40000\nOCTUBRE;10000;40000';
 const MONTH_NAMES=['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SETIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
 
 const DATA_FILES = {
@@ -514,6 +556,24 @@ function selectedMonth(){return document.getElementById('fMonth').value;}
 function preciseModuleRows(){const m=selectedMonth();return preciseHistory.filter(r=>m==='TODOS'||monthOf(r)===m);}
 function initMonths(){const months=availableMonths();const el=document.getElementById('fMonth');const old=el.value;el.innerHTML='<option value="TODOS">TODOS LOS MESES</option>';months.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=monthLabel(m);el.appendChild(o)});el.value=months.includes(old)?old:'TODOS';}
 function moduleGroups(rows,key){const map=new Map();rows.forEach(r=>{const n=clean(r[key])||'SIN DATO';const x=map.get(n)||{label:n,amount:0,count:0,patients:new Set()};x.amount+=r.amount;x.count+=r.cantidad||1;x.patients.add(r.clientKey);map.set(n,x)});return [...map.values()].sort((a,b)=>b.amount-a.amount);}
+// Comparativo mes contra mes para la vista de categoría médica.
+function previousMonthKey(month){
+  const [year,monthNumber]=month.split('-').map(Number);
+  if(!year||!monthNumber)return '';
+  return monthNumber===1?`${year-1}-12`:`${year}-${String(monthNumber-1).padStart(2,'0')}`;
+}
+function medicoMonthComparison(medico,currentAmount,previousGroups,hasPreviousMonth){
+  if(!hasPreviousMonth)return {previous:'—',change:'<span style="color:#6B7E78">Sin datos del mes anterior</span>'};
+  const previous=previousGroups.get(norm(medico))||0;
+  if(previous===0){
+    return {previous:money(0),change:currentAmount>0?'<span class="trend-chip trend-new">NUEVO · sin ventas previas</span>':'<span class="trend-chip trend-flat">SIN CAMBIO</span>'};
+  }
+  const difference=currentAmount-previous;
+  const rate=difference/Math.abs(previous)*100;
+  const text=`${difference>0?'▲':difference<0?'▼':'●'} ${difference>0?'+':''}${rate.toFixed(1)}%`;
+  const css=difference>0?'trend-up':difference<0?'trend-down':'trend-flat';
+  return {previous:money(previous),change:`<span class="trend-chip ${css}" title="Variación: ${money(difference)}">${text}</span>`};
+}
 function categoryFor(amount,kind){
  // Umbrales recuperados de las fórmulas de Cálculo_Categorías del maestro.
  if(kind==='institucion' && amount<200)return 'Sin Categoría';
@@ -555,14 +615,23 @@ function renderModule(){
  makeChart('moduleRight','chModuleRight',{type:'doughnut',data:{labels:rightLabels,datasets:[{data:rightData,backgroundColor:rightColors,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11,weight:'700'}}},datalabels:{display:ctx=>rightTotal>0&&ctx.dataset.data[ctx.dataIndex]/rightTotal>=.08,formatter:v=>pct(rightTotal?v/rightTotal*100:0),color:'#fff',font:{weight:'900',size:12}},tooltip:{callbacks:{label:c=>isCategory?`${c.raw} ${kind==='medico'?'médicos':'instituciones'} (${pct(rightTotal?c.raw/rightTotal*100:0)})`:`${money(c.raw)} (${pct(rightTotal?c.raw/rightTotal*100:0)})`}}}}});
  document.getElementById('moduleTableTitle').textContent=title+' · '+monthLabel(selectedMonth());
  if(isCategory){
-  document.getElementById('moduleTHead').innerHTML=`<tr><th>${escapeHtml(label)}</th><th>Facturación</th><th>Categoría</th><th>Cantidad</th><th>Pacientes</th><th>% total</th></tr>`;
-  document.getElementById('moduleTBody').innerHTML=allGroups.filter(g=>g.label!=='SIN MÉDICO'&&g.label!=='SIN INSTITUCIÓN').slice(0,300).map(g=>`<tr><td>${escapeHtml(g.label)}</td><td>${money(g.amount)}</td><td>${categoryTag(categoryFor(g.amount,kind))}</td><td>${g.count}</td><td>${g.patients.size}</td><td>${pct(total?g.amount/total*100:0)}</td></tr>`).join('')||'<tr><td colspan="6" style="text-align:center">No hay registros del período seleccionado</td></tr>';
-  document.getElementById('moduleCaveat').textContent=kind==='medico'?'Categorías del Excel: A = menos de S/ 500; AA = de S/ 500 a menos de S/ 1,000; AAA = S/ 1,000 o más. Se calculan con la facturación del período seleccionado.':'Categorías de institución del Excel: Sin Categoría = menos de S/ 200; A = de S/ 200 a menos de S/ 500; AA = de S/ 500 a menos de S/ 1,000; AAA = S/ 1,000 o más.';
- }else{
-  document.getElementById('moduleTHead').innerHTML=`<tr><th>${escapeHtml(label)}</th><th>Facturación</th><th>Cantidad</th><th>Pacientes</th><th>% total</th></tr>`;
-  document.getElementById('moduleTBody').innerHTML=allGroups.slice(0,100).map(g=>`<tr><td>${escapeHtml(g.label)}</td><td>${money(g.amount)}</td><td>${g.count}</td><td>${g.patients.size}</td><td>${pct(total?g.amount/total*100:0)}</td></tr>`).join('')||'<tr><td colspan="5" style="text-align:center">No hay registros del período seleccionado</td></tr>';
-  document.getElementById('moduleCaveat').textContent='Valores calculados a partir de las filas de Base_Precisa. Este análisis no duplica facturación del archivo PRECISA.xlsx.';
- }
+  const selected=selectedMonth();
+   const compareMedicos=kind==='medico'&&selected!=='TODOS';
+   const previousMonth=compareMedicos?previousMonthKey(selected):'';
+   const previousRows=compareMedicos?preciseHistory.filter(r=>monthOf(r)===previousMonth):[];
+   const previousGroups=new Map(moduleGroups(previousRows,'medico').map(g=>[norm(g.label),g.amount]));
+   const hasPreviousMonth=previousRows.length>0;
+   document.getElementById('moduleTHead').innerHTML=`<tr><th>${escapeHtml(label)}</th><th>Facturación</th><th>Categoría</th><th>Cantidad</th><th>Pacientes</th><th>% total</th>${compareMedicos?`<th>${escapeHtml(monthLabel(previousMonth))}</th><th>Variación mensual</th>`:''}</tr>`;
+   document.getElementById('moduleTBody').innerHTML=allGroups.filter(g=>g.label!=='SIN MÉDICO'&&g.label!=='SIN INSTITUCIÓN').slice(0,300).map(g=>{
+     const comp=compareMedicos?medicoMonthComparison(g.label,g.amount,previousGroups,hasPreviousMonth):null;
+     return `<tr><td>${escapeHtml(g.label)}</td><td>${money(g.amount)}</td><td>${categoryTag(categoryFor(g.amount,kind))}</td><td>${g.count}</td><td>${g.patients.size}</td><td>${pct(total?g.amount/total*100:0)}</td>${comp?`<td>${comp.previous}</td><td>${comp.change}</td>`:''}</tr>`;
+   }).join('')||`<tr><td colspan="${compareMedicos?8:6}" style="text-align:center">No hay registros del período seleccionado</td></tr>`;
+   document.getElementById('moduleCaveat').textContent=kind==='medico'?'Categorías del Excel: A = menos de S/ 500; AA = de S/ 500 a menos de S/ 1,000; AAA = S/ 1,000 o más. '+(compareMedicos?'Variación mensual respecto a '+monthLabel(previousMonth)+'. Si no hay información de ese mes, se indica como no disponible.':'Selecciona un mes específico para comparar con el mes anterior.'):'Categorías de institución del Excel: Sin Categoría = menos de S/ 200; A = de S/ 200 a menos de S/ 500; AA = de S/ 500 a menos de S/ 1,000; AAA = S/ 1,000 o más.';
+  }else{
+    document.getElementById('moduleTHead').innerHTML=`<tr><th>${escapeHtml(label)}</th><th>Facturación</th><th>Cantidad</th><th>Pacientes</th><th>% total</th></tr>`;
+    document.getElementById('moduleTBody').innerHTML=allGroups.slice(0,100).map(g=>`<tr><td>${escapeHtml(g.label)}</td><td>${money(g.amount)}</td><td>${g.count}</td><td>${g.patients.size}</td><td>${pct(total?g.amount/total*100:0)}</td></tr>`).join('')||'<tr><td colspan="5" style="text-align:center">No hay registros del período seleccionado</td></tr>';
+    document.getElementById('moduleCaveat').textContent='Valores calculados a partir de las filas de Base_Precisa. Este análisis no duplica facturación del archivo PRECISA.xlsx.';
+  }
 }
 
 function destroyChart(k){if(charts[k]){charts[k].destroy();delete charts[k]}}
@@ -689,6 +758,64 @@ function updateHeaderDates(){
   }
 }
 
+
+
+function parseGoalsCSV(csv){
+  const lines=String(csv||'').replace(/^\uFEFF/,'').split(/\r?\n/).filter(x=>x.trim());
+  const rows=lines.slice(1),result=new Map();
+  for(const line of rows){
+    const parts=line.split(';').map(x=>x.trim().replace(/^"|"$/g,''));
+    if(parts.length<3)continue;
+    const monthText=norm(parts[0]);
+    const idx=MONTH_NAMES.findIndex(x=>x===monthText||(x==='SETIEMBRE'&&monthText==='SEPTIEMBRE'));
+    const key=/^\d{4}-\d{2}$/.test(parts[0])?parts[0]:idx>=0?'2026-'+String(idx+1).padStart(2,'0'):'';
+    if(!key)continue;
+    result.set(key,{b2b:num(parts[1]),precisa:num(parts[2])});
+  }
+  return result;
+}
+async function loadGoals(){
+  try{
+    const response=await fetch('./META.csv?v='+Date.now(),{cache:'no-store'});
+    if(!response.ok)throw new Error('META.csv no encontrado');
+    const parsed=parseGoalsCSV(await response.text());
+    if(!parsed.size)throw new Error('META.csv sin metas válidas');
+    GOALS=parsed;
+    return true;
+  }catch(e){
+    // La tabla adjunta queda incorporada como respaldo inicial.
+    GOALS=parseGoalsCSV(GOAL_FALLBACK_CSV);
+    return false;
+  }
+}
+function renderGoals(){
+  const selected=selectedMonth();
+  const months=selected==='TODOS'?[...GOALS.keys()]:[selected];
+  const valid=months.filter(m=>GOALS.has(m));
+  const totalB2B=sum(valid.map(m=>GOALS.get(m).b2b));
+  const totalPrecisa=sum(valid.map(m=>GOALS.get(m).precisa));
+  // No aplicar filtros de sede, centro, campañas o fuente: metas son globales por canal.
+  const rows=SALES.filter(r=>valid.includes(monthOf(r)));
+  const b2b=sum(rows.filter(r=>r.recordType==='B2B').map(r=>r.amount));
+  const precisa=sum(rows.filter(r=>r.recordType==='PRECISA').map(r=>r.amount));
+  const render=(prefix,goal,actual)=>{
+    const available=valid.length>0;
+    const lack=Math.max(0,goal-actual),percent=goal>0?actual/goal*100:0;
+    document.getElementById(prefix+'Target').textContent=available?money(goal):'Sin meta definida';
+    document.getElementById(prefix+'Actual').textContent=available?money(actual):'—';
+    document.getElementById(prefix+'Remain').textContent=available?(lack>0?money(lack):'¡Meta alcanzada!'):'—';
+    document.getElementById(prefix+'Pct').textContent=available&&goal>0?pct(percent):'—';
+    const fill=document.getElementById(prefix+'Fill');fill.style.width=(available?Math.min(100,percent):0)+'%';
+    fill.style.background=available&&percent>=100?'#1C6E57':'#00A170';
+  };
+  render('goalB2B',totalB2B,b2b);
+  render('goalPrecisa',totalPrecisa,precisa);
+  render('goalTotal',totalB2B+totalPrecisa,b2b+precisa);
+  document.getElementById('goalsContext').textContent=selected==='TODOS'
+    ?'Acumulado de meses con meta registrada ('+valid.map(monthLabel).join(', ')+'). Se omiten períodos sin meta; no se aplican filtros de sede ni campañas a estos KPI.'
+    :'Metas de '+monthLabel(selected)+'. Comparativo global por canal, independiente de los filtros de fuente, sede, centro y campañas.';
+}
+
 function updateSalesView(){
   const data=filteredSales();
   const revenue=sum(data.map(x=>x.amount));
@@ -705,6 +832,7 @@ function updateSalesView(){
   advisory.style.display=month!=='TODOS'&&hasUnpaid?'block':'none';
   advisory.textContent='Período: '+monthLabel(month)+'. Los registros B2B sin FECHA ni MES válidos quedan fuera del filtro mensual. Los demás se incluyen normalmente.';
   renderModule();
+  renderGoals();
 }
 
 function drawSalesCharts(data){
@@ -822,14 +950,15 @@ async function loadAllData(manual=false){
     }
     if(typeof XLSX==='undefined') throw new Error('No se pudo cargar el lector de Excel (SheetJS). Verifica tu conexión a internet.');
     const [b2bWb,precisaWb,masterWb]=await Promise.all([fetchWorkbook(DATA_FILES.b2b),fetchWorkbook(DATA_FILES.precisa),fetchWorkbook(DATA_FILES.master)]);
+    await loadGoals();
     const b2b=parseB2B(b2bWb);
     const precisa=parsePrecisa(precisaWb);
     preciseHistory=parseMasterPrecisa(masterWb);
-    // El maestro es la fuente oficial. Solo agregar filas del otro PRECISA cuando
-    // su INVNUM no existe en el maestro: evita contar dos veces el mismo documento.
-    const knownInvoices=new Set(preciseHistory.map(r=>r.invoice).filter(Boolean));
-    const additions=precisa.filter(r=>!knownInvoices.has(r.invoice));
-    SALES=[...b2b.sales,...preciseHistory,...additions];
+    // Fuente exclusiva para la vista principal de PRECISA: PRECISA.xlsx.
+    // PRECISA_MAESTRO.xlsx se conserva SOLO para el módulo PRECISA DETALLE.
+    // Nunca mezclar filas del maestro en la facturación principal: evita
+    // duplicidades y mantiene consistentes KPIs, filtros y gráficos.
+    SALES=[...b2b.sales,...precisa];
     ATTENDANCE=b2b.attendance;
 
     updateControls();
@@ -838,7 +967,7 @@ async function loadAllData(manual=false){
     updateB2B();
 
     const now=new Date().toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-    setStatus(`Actualizado ${now} · ${ATTENDANCE.length} atendidos B2B · ${SALES.length} líneas de venta/facturación`);
+    setStatus(`Actualizado ${now} · ${ATTENDANCE.length} atendidos B2B · ${SALES.length} líneas de venta/facturación · Facturación principal PRECISA desde PRECISA.xlsx`);
   }catch(err){
     console.error(err);
     setStatus(`Error: ${err.message}`,true);
